@@ -1,4 +1,4 @@
--- Script made by globallzin <3
+-- Script made by globallzin
 --SERVICES
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
