@@ -1,10 +1,36 @@
--- Script made by globallzin
+--[[
+{globallzin}
+	
+	Script made for game: Volleyball 4.2
+	Educational purposes only!!
+	I don't care if you get banned using this, and I'm not reponsible either.
+	
+	Last updated on: 1/15 
+	
+	Source code on github: Globallzin
+	
+]]
+
+if getgenv().VOLLEYBALL_SCRIPT_LOADED then
+	getgenv().VOLLEYBALL_SCRIPT_LOADED:Destroy()
+end
+
+
+--EXEC
+local exec = {}
+
+
 --SERVICES
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local TextService = game:GetService("TextService")
+local Debris = game:GetService("Debris")
 
 
 --VARIABLES
+local connections = {} :: {RBXScriptConnection}
 local game_data = ReplicatedStorage.GameData
 local pickups = game_data.Pickups
 local match_ended = pickups.MatchEnded
@@ -13,6 +39,9 @@ local rev_pickup = ReplicatedStorage.Remotes.Pickups
 local player = Players.LocalPlayer
 local selected_team = nil
 local selected_position = nil
+local line_fault = workspace.ServeLF
+local backrow_line_fault = workspace.BackrowLF
+
 
 --TEAMS
 local red_players = pickups.RedPlayers
@@ -20,11 +49,13 @@ local blue_players = pickups.BluePlayers
 
 
 --CREATING UI
-do
-	local gui = Instance.new("ScreenGui")
-	gui.Name = game:GetService("HttpService"):GenerateGUID(false)
-	gui.Parent = game:GetService("CoreGui")
 
+local gui = Instance.new("ScreenGui")
+gui.Name = HttpService:GenerateGUID(false)
+gui.Parent = CoreGui
+
+-- Team & Position selector UI
+do
 	local frame = Instance.new("Frame")
 	frame.Size = UDim2.fromScale(0.1, 0.05)
 	frame.AnchorPoint = Vector2.new(1, 0.5)
@@ -120,11 +151,46 @@ do
 	positionbox.Changed:Connect(PositionChanged)
 end
 
+-- Notification UI
+do
+	local notification_frame = Instance.new("Frame")
+	notification_frame.AnchorPoint = Vector2.new(1, 1)
+	notification_frame.Size = UDim2.fromScale(0.2, 0.5)
+	notification_frame.Position = UDim2.fromScale(1, 1)
+	notification_frame.Parent = gui
+
+	local layout = Instance.new("UIListLayout")
+	layout.FillDirection = Enum.FillDirection.Vertical
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+	layout.Parent = notification_frame
+
+	local notify_placeholder = Instance.new("TextLabel")
+	notify_placeholder.Size = UDim2.fromScale(1, 0.1)
+	notify_placeholder.TextScaled = true
+	notify_placeholder.Font = Enum.Font.SourceSans
+	notify_placeholder.TextColor3 = Color3.new(0, 0, 0)
+
+	local text_constraint = Instance.new("UITextSizeConstraint")
+	text_constraint.MaxTextSize = 20
+
+	function CreateNotification(text: string)
+		local new_notification = notify_placeholder:Clone()
+		new_notification.Text = text
+		new_notification.Parent = notification_frame
+		
+		Debris:AddItem(new_notification, 5)
+	end
+end
+
 
 --FUNCTIONS
+
 function JoinTeam()
-	if not selected_team or not selected_position then return end
-	
+	if not selected_team or not selected_position then 
+		return 
+	end
+
 	local args = {
 		[1] = "JoinTeam",
 		[2] = {
@@ -137,10 +203,31 @@ function JoinTeam()
 end
 
 
---RUNTIME
-match_running.Changed:Connect(function()
-	if match_running.Value == false then
-		--Match just started
-		JoinTeam()
+--EXEC FUNCTIONS
+function exec:Destroy()
+	gui:Destroy()
+	
+	for _,connection in next, connections do
+		connection:Disconnect()
 	end
-end)
+end
+
+--RUNTIME
+getgenv().VOLLEYBALL_SCRIPT_LOADED = exec
+
+-- Remove line faults
+line_fault.Position = Vector3.new(0, -1, 0)
+backrow_line_fault.Position = Vector3.new(0, -1, 0)
+
+table.insert(
+	connections, 
+	match_running.Changed:Connect(function()
+		if match_running.Value == false then
+			--Match just started
+			JoinTeam()
+		end
+	end)
+)
+
+CreateNotification("Started auto join")
+CreateNotification("Removed Backrow and Serve line fault")
