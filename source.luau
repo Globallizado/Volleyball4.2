@@ -157,6 +157,7 @@ do
 	notification_frame.AnchorPoint = Vector2.new(1, 1)
 	notification_frame.Size = UDim2.fromScale(0.2, 0.5)
 	notification_frame.Position = UDim2.fromScale(1, 1)
+	notification_frame.BackgroundTransparency = 1
 	notification_frame.Parent = gui
 
 	local layout = Instance.new("UIListLayout")
@@ -169,6 +170,7 @@ do
 	notify_placeholder.Size = UDim2.fromScale(1, 0.1)
 	notify_placeholder.TextScaled = true
 	notify_placeholder.Font = Enum.Font.SourceSans
+	notify_placeholder.BackgroundTransparency = 1
 	notify_placeholder.TextColor3 = Color3.new(0, 0, 0)
 
 	local text_constraint = Instance.new("UITextSizeConstraint")
