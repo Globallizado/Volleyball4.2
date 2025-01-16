@@ -298,8 +298,6 @@ table.insert(
 				break
 			end
 		end
-		
-		print(`Found for {input.KeyCode}: {respective_function}`)
 
 		if not GPE and respective_function then
 			local success, error_message = pcall(respective_function)
