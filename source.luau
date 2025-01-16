@@ -286,6 +286,7 @@ CreateNotification("Removed Backrow and Serve line fault")
 table.insert(
 	connections, 
 	UserInputService.InputBegan:Connect(function(input, GPE)
+		print(input, GPE)
 		local respective_function = KEYBINDS[input.KeyCode]
 		print("found", respective_function)
 		if not GPE and respective_function then
