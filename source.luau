@@ -20,12 +20,6 @@ end
 local exec = {}
 
 
---SETTINGS
-local KEYBINDS = {
-	[Enum.KeyCode.Y] = BallTeleport
-}
-
-
 --SERVICES
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -263,6 +257,16 @@ function exec:Destroy()
 	end
 end
 
+
+--SETTINGS
+local KEYBINDS = {
+	BALL_TELEPORT_KEY = {
+		BindTo = Enum.KeyCode.Y,
+		Function = BallTeleport
+	}
+}
+
+
 --RUNTIME
 getgenv().VOLLEYBALL_SCRIPT_LOADED = exec
 
@@ -283,16 +287,26 @@ table.insert(
 CreateNotification("Started auto join")
 CreateNotification("Removed Backrow and Serve line fault")
 
-local keybinds_connection = UserInputService.InputBegan:Connect(function(input, GPE)
-	local respective_function = KEYBINDS[input.KeyCode]
-	
-	if not GPE and respective_function then
-		local success, error_message = pcall(respective_function)
+table.insert(
+	connections, 
+	UserInputService.InputBegan:Connect(function(input, GPE)
+		local respective_function
 
-		if error_message then
-			warn(error_message)
+		for _,key in KEYBINDS do
+			if key.BindTo == input.KeyCode then
+				respective_function = key.Function
+				break
+			end
 		end
-	end
-end)
+		
+		print(`Found for {input.KeyCode}: {respective_function}`)
 
-table.insert(connections, keybinds_connection)
+		if not GPE and respective_function then
+			local success, error_message = pcall(respective_function)
+
+			if error_message then
+				warn(error_message)
+			end
+		end
+	end)
+)
