@@ -283,14 +283,17 @@ table.insert(
 CreateNotification("Started auto join")
 CreateNotification("Removed Backrow and Serve line fault")
 
-UserInputService.InputBegan:Connect(function(input, GPE)
-	local respective_function = KEYBINDS[input.KeyCode]
+table.insert(
+	connections, 
+	UserInputService.InputBegan:Connect(function(input, GPE)
+		local respective_function = KEYBINDS[input.KeyCode]
 
-	if not GPE and respective_function then
-		local success, error_message = pcall(respective_function)
+		if not GPE and respective_function then
+			local success, error_message = pcall(respective_function)
 
-		if error_message then
-			warn(error_message)
+			if error_message then
+				warn(error_message)
+			end
 		end
-	end
-end)
+	end)
+)
