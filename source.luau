@@ -20,6 +20,12 @@ end
 local exec = {}
 
 
+--SETTINGS
+local KEYBINDS = {
+	[Enum.KeyCode.Y] = BallTeleport
+}
+
+
 --SERVICES
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local CoreGui = game:GetService("CoreGui")
@@ -27,6 +33,7 @@ local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local TextService = game:GetService("TextService")
 local Debris = game:GetService("Debris")
+local UserInputService = game:GetService("UserInputService")
 
 
 --VARIABLES
@@ -40,7 +47,9 @@ local player = Players.LocalPlayer
 local selected_team = nil
 local selected_position = nil
 local line_fault = workspace.ServeLF
+local rev_player_action = ReplicatedStorage.Remotes.PlayerAction
 local backrow_line_fault = workspace.BackrowLF
+
 
 
 --TEAMS
@@ -204,6 +213,46 @@ function JoinTeam()
 	rev_pickup:FireServer(unpack(args))
 end
 
+function BallTeleport()
+	local function getNearBall(char)
+    local balls = {}
+    for _,ball in next, workspace:GetChildren() do
+        if ball.Name == "Ball" then
+            table.insert(balls, {
+                ball = ball,
+                distance = (char.PrimaryPart.Position - ball.BallPart.Position).Magnitude
+              })
+        end
+    end
+
+    local nearest = math.huge
+    local chosen
+    for _,ball in balls do
+        if ball.distance < nearest then
+            chosen = ball.ball
+            nearest = ball.distance
+        end
+    end
+
+    return chosen.BallPart
+	end
+
+	local char = player.Character
+	local cached = char.PrimaryPart.CFrame
+	local team = player.Team.Name
+	local teams = {"Blue", "Red"}
+	table.remove(teams, table.find(teams, team))
+	team = teams[1]
+
+	local objective = workspace._PositionAreas[team.."Players"]["1"]
+	local _ball = getNearBall(char)
+	rev_player_action:FireServer("Spiking")
+	wait()
+	char:PivotTo(CFrame.new(_ball.Position, objective.Position))
+	wait()
+	char:PivotTo(cached)
+end
+
 
 --EXEC FUNCTIONS
 function exec:Destroy()
@@ -233,3 +282,15 @@ table.insert(
 
 CreateNotification("Started auto join")
 CreateNotification("Removed Backrow and Serve line fault")
+
+UserInputService.InputBegan:Connect(function(input, GPE)
+	local respective_function = KEYBINDS[input.KeyCode]
+
+	if not GPE and respective_function then
+		local success, error_message = pcall(respective_function)
+
+		if error_message then
+			warn(error_message)
+		end
+	end
+end)
