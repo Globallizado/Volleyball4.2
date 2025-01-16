@@ -287,7 +287,7 @@ table.insert(
 	connections, 
 	UserInputService.InputBegan:Connect(function(input, GPE)
 		local respective_function = KEYBINDS[input.KeyCode]
-
+		print("found", respective_function)
 		if not GPE and respective_function then
 			local success, error_message = pcall(respective_function)
 
